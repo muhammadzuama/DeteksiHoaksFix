@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hoaks/util/global.color.dart';
+import 'package:hoaks/view/hasil.view.dart';
 
 class HoaxDetectionPage extends StatelessWidget {
   @override
@@ -7,7 +8,7 @@ class HoaxDetectionPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Deteksi Hoaks',
           style: TextStyle(
             color: Colors.black,
@@ -29,16 +30,20 @@ class HoaxDetectionPage extends StatelessWidget {
               ),
               maxLines: 5,
             ),
-            SizedBox(height: 20.0),
+            const SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HoaksDetectionPage()),
+                );
                 // Add your analyze button functionality here
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: GlobalColors.button,
                 padding: const EdgeInsets.symmetric(
                     horizontal: 40.0, vertical: 16.0),
-                textStyle: TextStyle(
+                textStyle: const TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.bold,
                 ),

@@ -17,7 +17,7 @@ class Register extends StatelessWidget {
       backgroundColor: GlobalColors.background,
       body: Center(
         child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 32),
+          margin: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -28,21 +28,21 @@ class Register extends StatelessWidget {
                     fontSize: 30,
                     fontWeight: FontWeight.bold),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 11,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Username ',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -55,18 +55,18 @@ class Register extends StatelessWidget {
                           hintText: "Masukkan Username ",
                           hintStyle: TextStyle(
                               fontSize: 15,
-                              color: Color.fromARGB(255, 168, 168, 168)
+                              color: const Color.fromARGB(255, 168, 168, 168)
                                   .withOpacity(0.6)),
-                          contentPadding: EdgeInsets.symmetric(
+                          contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 17)),
                     ),
                   ),
-                  SizedBox(height: 15),
-                  Text(
+                  const SizedBox(height: 15),
+                  const Text(
                     'Password',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -80,21 +80,21 @@ class Register extends StatelessWidget {
                         hintText: "Masukkan Password",
                         hintStyle: TextStyle(
                           fontSize: 15,
-                          color: Color.fromARGB(255, 168, 168, 168)
+                          color: const Color.fromARGB(255, 168, 168, 168)
                               .withOpacity(0.6),
                         ),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 17),
                       ),
                       obscureText: true, // Menampilkan inputan sebagai password
                     ),
                   ),
-                  SizedBox(height: 15),
-                  Text(
+                  const SizedBox(height: 15),
+                  const Text(
                     'Konfirmasi Password',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -108,21 +108,21 @@ class Register extends StatelessWidget {
                         hintText: "Konfirmasi Password",
                         hintStyle: TextStyle(
                           fontSize: 15,
-                          color: Color.fromARGB(255, 168, 168, 168)
+                          color: const Color.fromARGB(255, 168, 168, 168)
                               .withOpacity(0.6),
                         ),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 17),
                       ),
                       obscureText: true, // Menampilkan inputan sebagai password
                     ),
                   ),
-                  SizedBox(height: 25),
-                  Container(
+                  const SizedBox(height: 25),
+                  SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 30, vertical: 15),
                             backgroundColor: GlobalColors.button),
                         onPressed: () {
@@ -134,32 +134,33 @@ class Register extends StatelessWidget {
                             showDialog(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                      title: Text("Invalid Password"),
-                                      content: Text(
+                                      title: const Text("Invalid Password"),
+                                      content: const Text(
                                           "Password dan Konfrirmasi Password Tidak cocok"),
                                       actions: [
                                         TextButton(
                                           onPressed: () {
                                             Navigator.pop(context);
                                           },
-                                          child: Text("OK"),
+                                          child: const Text("OK"),
                                         )
                                       ],
                                     ));
                           } else {
                             username = inputusername;
                             password = inputpassword;
-                            print("Username: $username");
-                            print("Password: $password");
+                            // ignore: avoid_print
+                            // print("Username: $username");
+                            // print("Password: $password");
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => LoginView()),
+                                  builder: (context) => const LoginView()),
                             );
                           }
                           // Mengambil nilai inputan password
                         },
-                        child: Text(
+                        child: const Text(
                           "REGISTER",
                         )),
                   ),
