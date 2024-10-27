@@ -25,7 +25,7 @@ class _UserListState extends State<UserList> {
   List users = [];
 
   Future<void> fetchUsers() async {
-    var url = Uri.parse('http://192.168.1.4:5000/users'); // URL Flask API
+    var url = Uri.parse('http://192.168.242.22:5000/users'); // URL Flask API
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
