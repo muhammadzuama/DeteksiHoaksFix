@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:hoaks/trial/fetch.dart';
 import 'package:hoaks/util/global.color.dart';
 
@@ -9,31 +11,49 @@ class ArticleFetcherPage extends StatefulWidget {
 
 class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
   final TextEditingController _urlController = TextEditingController();
-  String _articleTitle = '';
   String _articleContent = '';
   bool _isLoading = false;
   String? _errorMessage;
+  String? _predictionResult;
 
-  void _fetchArticle() async {
+  // Validasi URL dengan Regex
+  bool _isValidUrl(String url) {
+    final Uri? uri = Uri.tryParse(url);
+    final RegExp regex = RegExp(
+      r'^(http|https):\/\/[^\s$.?#].[^\s]*$',
+      caseSensitive: false,
+    );
+    return uri != null &&
+        uri.hasScheme &&
+        uri.hasAuthority &&
+        regex.hasMatch(url);
+  }
+
+  // Ambil artikel dan lakukan prediksi
+  Future<void> _fetchAndPredictArticle() async {
+    String url = _urlController.text.trim();
+    if (!_isValidUrl(url)) {
+      setState(() {
+        _errorMessage = 'URL tidak valid. Masukkan URL yang benar.';
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _predictionResult = null;
     });
 
-    String url = _urlController.text;
-
     try {
-      // Fetch the article
-      Map<String, String> result = await fetchArticle(url);
-
+      String articleContent = await fetchArticleContent(url);
       setState(() {
-        _articleTitle = result['title'] ?? 'No Title';
-        _articleContent = result['content'] ?? 'No Content';
+        _articleContent = articleContent;
       });
+      await _detectHoax(articleContent);
     } catch (e) {
       setState(() {
-        _errorMessage =
-            'Failed to load article. Please check the URL and try again.';
+        _errorMessage = 'Kesalahan saat memuat data: $e';
       });
     } finally {
       setState(() {
@@ -42,10 +62,41 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
     }
   }
 
+  // Prediksi apakah artikel hoaks
+  Future<void> _detectHoax(String articleContent) async {
+    final Uri apiEndpoint = Uri.parse("http://192.168.1.4:5000/predict");
+
+    try {
+      final response = await http.post(
+        apiEndpoint,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "texts": [articleContent]
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final prediction = responseData['predictions']?[0]?['label'];
+        setState(() {
+          _predictionResult = prediction ?? 'Hasil tidak ditemukan.';
+        });
+      } else {
+        setState(() {
+          _errorMessage =
+              'Gagal memuat prediksi. Status kode: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Kesalahan saat memproses prediksi: $e';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Fetch Article'),
         backgroundColor: Colors.blueGrey,
@@ -63,7 +114,7 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _fetchArticle,
+              onPressed: _isLoading ? null : _fetchAndPredictArticle,
               style: ElevatedButton.styleFrom(
                 backgroundColor: GlobalColors.button,
                 padding: const EdgeInsets.symmetric(
@@ -74,9 +125,9 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
                   borderRadius: BorderRadius.circular(10.0),
                 ),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.auto_awesome_outlined, color: Colors.white),
                   SizedBox(width: 10.0),
                   Text('Analyze', style: TextStyle(color: Colors.white)),
@@ -87,19 +138,23 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
             if (_isLoading) const CircularProgressIndicator(),
             if (_errorMessage != null)
               Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-            if (_articleTitle.isNotEmpty && !_isLoading)
+            if (_articleContent.isNotEmpty && !_isLoading)
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _articleTitle,
-                        style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                        _articleContent,
+                        style: const TextStyle(fontSize: 16),
                       ),
-                      const SizedBox(height: 10),
-                      Text(_articleContent),
+                      const SizedBox(height: 20),
+                      if (_predictionResult != null)
+                        Text(
+                          'Hoax Prediction: $_predictionResult',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
                     ],
                   ),
                 ),
@@ -109,4 +164,10 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: ArticleFetcherPage(),
+  ));
 }

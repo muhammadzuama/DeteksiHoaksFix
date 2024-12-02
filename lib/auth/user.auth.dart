@@ -25,12 +25,13 @@ class _UserListState extends State<UserList> {
   List users = [];
 
   Future<void> fetchUsers() async {
-    var url = Uri.parse('http://192.168.242.22:5000/users'); // URL Flask API
+    var url = Uri.parse('http://192.168.1.7:5000/users'); // URL Flask API
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
       setState(() {
-        users = json.decode(response.body);
+        // Akses kunci 'users' dari respons JSON
+        users = json.decode(response.body)['users'];
       });
     } else {
       throw Exception('Failed to load users');
@@ -45,14 +46,18 @@ class _UserListState extends State<UserList> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: users.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(users[index]['name']),
-          subtitle: Text(users[index]['email']),
-        );
-      },
-    );
+    return users.isEmpty
+        ? Center(
+            child:
+                CircularProgressIndicator()) // Tampilkan loader jika data belum dimuat
+        : ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(users[index]['name']),
+                subtitle: Text(users[index]['email']),
+              );
+            },
+          );
   }
 }

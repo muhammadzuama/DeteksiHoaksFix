@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hoaks/trial/prodik.dart';
 import 'package:hoaks/trial/web.view.dart';
 import 'package:hoaks/view/fitur1.view.dart';
 
 class DetectionView extends StatelessWidget {
+  final int userId; // User ID diterima melalui konstruktor
+
+  DetectionView({required this.userId});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +35,7 @@ class DetectionView extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => HoaxDetectionPage()),
+                            builder: (context) => PredictionPage()),
                       );
                       // Implement the onTap action
                     },
@@ -40,6 +45,11 @@ class DetectionView extends StatelessWidget {
                     title: 'Deteksi Hoaks With Link',
                     subtitle: 'Deteksi Hoaks dengan link',
                     onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PredictionPage1()),
+                      );
                       // Implement the onTap action
                     },
                   ),

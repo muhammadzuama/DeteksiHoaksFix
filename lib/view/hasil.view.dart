@@ -70,7 +70,7 @@ class HoaksDetectionPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(15),
               ),
               child: const Text(
-                'Insomnia. Ciptakan rutinitas malam yang tenang dengan membaca atau meditasi, hindari penggunaan perangkat elektronik sebelum tidur. Pastikan tidur nyaman dengan suhu yang baik, pencahayaan yang redup, dan tanpa kebisingan.',
+                'teks original',
                 style: TextStyle(
                     fontSize: 16.0, color: Color.fromARGB(255, 0, 0, 0)),
                 textAlign:
@@ -84,7 +84,7 @@ class HoaksDetectionPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => HoaxDetectionPage()),
+                  MaterialPageRoute(builder: (context) => PredictionPage()),
                 );
                 // Add your analyze button functionality here
               },

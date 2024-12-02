@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-void main() {
-  runApp(MaterialApp(
-    home: HoaxCheckHistoryPage(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
+// void main() {
+//   runApp(MaterialApp(
+//     home: HoaxCheckHistoryPage(),
+//     debugShowCheckedModeBanner: false,
+//   ));
+// }
 
 class HoaxCheckHistoryPage extends StatelessWidget {
+  final int userId; // User ID diterima melalui konstruktor
+  HoaxCheckHistoryPage({required this.userId});
   // Dummy data untuk riwayat pengecekan hoaks
   final List<HoaxCheckHistory> history = [
     HoaxCheckHistory(
