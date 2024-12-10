@@ -1,8 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:hoaks/util/global.color.dart';
-import 'package:hoaks/view/login.view.dart';
+import 'package:hoaks/view/home.view.dart';
 
 class SplashView extends StatelessWidget {
   const SplashView({super.key});
@@ -12,7 +11,7 @@ class SplashView extends StatelessWidget {
     Timer(const Duration(seconds: 2), () {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => LoginView()),
+        MaterialPageRoute(builder: (context) => Homepage()),
       );
     });
     return Scaffold(

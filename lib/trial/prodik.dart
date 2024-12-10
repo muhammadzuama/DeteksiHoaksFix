@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
+import 'package:path_provider/path_provider.dart';
 
 class PredictionPage1 extends StatefulWidget {
   @override
@@ -13,26 +15,23 @@ Future<String> fetchArticleContent(String url) async {
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      // Parse the HTML document
       var document = parse(response.body);
-
-      // Ambil judul artikel, asumsi berada di tag <h1>
       String title = document.querySelector('h1')?.text.trim() ?? 'No Title';
-
-      // Ambil semua elemen <p> sebagai konten artikel
       String content = document
-          .querySelectorAll('p') // Ambil semua elemen <p>
-          .map((element) => element.text.trim()) // Ekstrak teks dari elemen
+          .querySelectorAll('p')
+          .map((element) => element.text.trim())
           .where((text) =>
-              text.isNotEmpty &&
-              !text.toLowerCase().contains(
-                  'advertisement')) // Hapus teks kosong dan kata 'advertisement'
-          .join(' '); // Gabungkan semua paragraf dalam satu baris
+              text.isNotEmpty && !text.toLowerCase().contains('advertisement'))
+          .join(' ');
 
-      // Gabungkan judul dan konten
-      return '$title $content';
+      if (content.isEmpty) {
+        throw Exception("Tidak ada konten artikel yang ditemukan.");
+      }
+
+      return '$title\n\n$content';
     } else {
-      throw Exception('Failed to load article');
+      throw Exception(
+          'Gagal memuat artikel. Kode status: ${response.statusCode}');
     }
   } catch (e) {
     return 'Error fetching article: $e';
@@ -41,32 +40,27 @@ Future<String> fetchArticleContent(String url) async {
 
 class _PredictionPageState extends State<PredictionPage1> {
   final TextEditingController _urlController = TextEditingController();
-  List<Map<String, dynamic>>? _predictions;
   String? _errorMessage;
   bool _isLoading = false;
 
   Future<void> fetchPredictions(String url) async {
-    final String inputText =
-        await fetchArticleContent(url); // Fetch content from URL
-
-    if (inputText.isEmpty || inputText == 'Error fetching article: null') {
-      setState(() {
-        _errorMessage = "Teks artikel tidak ditemukan.";
-      });
-      return;
-    }
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-      _predictions = null;
     });
 
     try {
-      // Endpoint API
-      final apiUrl = Uri.parse("http://192.168.1.4:5000/predict");
+      final inputText = await fetchArticleContent(url);
 
-      // Request ke API dengan teks artikel
+      if (inputText.startsWith('Error fetching article')) {
+        setState(() {
+          _errorMessage = inputText;
+        });
+        return;
+      }
+
+      final apiUrl = Uri.parse("http://192.168.1.7:5000/predict");
+
       final response = await http.post(
         apiUrl,
         headers: {'Content-Type': 'application/json'},
@@ -80,10 +74,18 @@ class _PredictionPageState extends State<PredictionPage1> {
 
         if (responseData['predictions'] != null &&
             responseData['predictions'].isNotEmpty) {
-          setState(() {
-            _predictions =
-                List<Map<String, dynamic>>.from(responseData['predictions']);
-          });
+          final prediction =
+              Map<String, dynamic>.from(responseData['predictions'][0]);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PredictionResultPage(
+                originalText: prediction['original_text']?.toString() ?? 'N/A',
+                predictedLabel: prediction['predicted_label'] ?? -1,
+              ),
+            ),
+          );
         } else {
           setState(() {
             _errorMessage = "Data prediksi tidak ditemukan.";
@@ -92,7 +94,7 @@ class _PredictionPageState extends State<PredictionPage1> {
       } else {
         setState(() {
           _errorMessage =
-              "Gagal memuat prediksi. Status code: ${response.statusCode}";
+              "Gagal memuat prediksi. Kode status: ${response.statusCode}";
         });
       }
     } catch (e) {
@@ -106,7 +108,6 @@ class _PredictionPageState extends State<PredictionPage1> {
     }
   }
 
-  // Fungsi untuk memvalidasi URL
   bool isValidUrl(String url) {
     final Uri? parsedUrl = Uri.tryParse(url);
     return parsedUrl != null &&
@@ -114,7 +115,6 @@ class _PredictionPageState extends State<PredictionPage1> {
         (parsedUrl.scheme == 'http' || parsedUrl.scheme == 'https');
   }
 
-  // Fungsi untuk menampilkan popup error
   void showErrorPopup(String message) {
     showDialog(
       context: context,
@@ -180,44 +180,124 @@ class _PredictionPageState extends State<PredictionPage1> {
                 _errorMessage!,
                 style: const TextStyle(color: Colors.red),
               ),
-            if (_predictions != null) _buildPredictionResults(),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildPredictionResults() {
-    return Expanded(
-      child: ListView.builder(
-        itemCount: _predictions!.length,
-        itemBuilder: (context, index) {
-          final prediction = _predictions![index];
+class PredictionResultPage extends StatelessWidget {
+  final String originalText;
+  final int predictedLabel;
 
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Teks Artikel:",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  Text(prediction['original_text']?.toString() ?? 'N/A'),
-                  const SizedBox(height: 8.0),
-                  const Text(
-                    "Label Prediksi:",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  // Pastikan konversi data menjadi string
-                  Text(prediction['predicted_label']?.toString() ?? 'N/A'),
-                ],
+  const PredictionResultPage({
+    required this.originalText,
+    required this.predictedLabel,
+  });
+
+  Future<void> saveToFile(BuildContext context, String text) async {
+    try {
+      // Show dialog to enter custom filename
+      String? fileName = await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          TextEditingController fileNameController = TextEditingController();
+          return AlertDialog(
+            title: const Text("Masukkan Nama File"),
+            content: TextField(
+              controller: fileNameController,
+              decoration: const InputDecoration(
+                hintText: "Nama file",
+                border: OutlineInputBorder(),
               ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(fileNameController.text.trim());
+                },
+                child: const Text("Simpan"),
+              ),
+            ],
           );
         },
+      );
+
+      if (fileName != null && fileName.isNotEmpty) {
+        final directory = Directory('/storage/emulated/0/Download');
+        final file = File('${directory.path}/$fileName.txt');
+        await file.writeAsString(text);
+        debugPrint("File saved at: ${file.path}");
+      }
+    } catch (e) {
+      debugPrint("Failed to save file: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    IconData icon = predictedLabel == 0
+        ? Icons.check_circle_outline
+        : Icons.warning_amber_rounded;
+
+    String label = predictedLabel == 0 ? "Valid" : "Hoaks";
+    Color iconColor = predictedLabel == 0 ? Colors.green : Colors.red;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Hasil Prediksi"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 100.0,
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                  color: iconColor,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            const Text(
+              "Teks Asli:",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8.0),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  originalText,
+                  style: const TextStyle(fontSize: 16.0),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton.icon(
+              onPressed: () {
+                saveToFile(context, "Prediksi: $label\n\nTeks:\n$originalText");
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Hasil prediksi disimpan.")),
+                );
+              },
+              icon: const Icon(Icons.save),
+              label: const Text("Simpan Hasil"),
+            ),
+          ],
+        ),
       ),
     );
   }

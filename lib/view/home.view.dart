@@ -2,15 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hoaks/view/about.view.dart';
 import 'package:hoaks/view/detection.view.dart';
 import 'package:hoaks/view/edu.view.dart';
-import 'package:hoaks/view/history.view.dart';
-import 'package:hoaks/view/profile.view.dart'; // Import halaman profil pengguna
-import 'package:shared_preferences/shared_preferences.dart'; // Untuk SharedPreferences
+import 'package:hoaks/view/history.view.dart'; // Import halaman profil pengguna
 
 class Homepage extends StatefulWidget {
-  final int userId; // User ID diterima melalui konstruktor
-
-  Homepage({required this.userId});
-
   @override
   State<Homepage> createState() => _HomepageState();
 }
@@ -18,14 +12,12 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int _currentIndex = 0;
   late PageController _pageController;
-  String _userName = 'User'; // Untuk nama pengguna
-  int? _userId; // Jadikan nullable untuk menghindari late initialization error
-
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentIndex);
-    _loadUserData(); // Memuat data pengguna dari SharedPreferences
+    _pageController = PageController(
+        initialPage:
+            _currentIndex); // Memuat data pengguna dari SharedPreferences
   }
 
   @override
@@ -35,26 +27,10 @@ class _HomepageState extends State<Homepage> {
   }
 
   // Fungsi untuk memuat data pengguna
-  Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      // Mengambil user_id dari SharedPreferences
-      _userId = prefs.getInt('user_id') ?? widget.userId;
-      _userName =
-          prefs.getString('user_name') ?? 'User'; // Mendapatkan nama pengguna
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     final Color iconColor = const Color.fromARGB(255, 1, 25, 70);
-
-    // Jika data belum selesai dimuat, tampilkan indikator loading
-    if (_userId == null) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -75,16 +51,13 @@ class _HomepageState extends State<Homepage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 10),
-                    // Menampilkan pesan selamat datang
-                    Text(
-                      'Selamat datang, $_userName',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                    // Text(
+                    //   'Selamat datang, User',
+                    //   style: const TextStyle(
+                    //     fontSize: 24,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
                     ListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -97,8 +70,7 @@ class _HomepageState extends State<Homepage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      DetectionView(userId: _userId!)),
+                                  builder: (context) => DetectionView()),
                             );
                           },
                         ),
@@ -133,9 +105,9 @@ class _HomepageState extends State<Homepage> {
               ),
             ),
             // Halaman History
-            HoaxCheckHistoryPage(userId: _userId!),
+            HistoryPage(),
             // Halaman Profil Pengguna
-            ProfilePage(userId: _userId!),
+            AboutUsPage(),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -152,8 +124,8 @@ class _HomepageState extends State<Homepage> {
               label: 'History',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
+              icon: Icon(Icons.info),
+              label: 'About',
             ),
           ],
           onTap: (index) {
