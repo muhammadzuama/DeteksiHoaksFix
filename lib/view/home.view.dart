@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hoaks/trial/web.view.dart';
 import 'package:hoaks/view/about.view.dart';
 import 'package:hoaks/view/detection.view.dart';
 import 'package:hoaks/view/edu.view.dart';
@@ -88,13 +89,13 @@ class _HomepageState extends State<Homepage> {
                         ),
                         HoaxFeature(
                           imagePath: 'images/image6.png',
-                          title: 'Tentang Apps',
-                          subtitle: 'Lihat profil dari aplikasi ini',
+                          title: 'Ubah Link Berita Menjadi Teks Berita',
+                          subtitle: 'Copy isi berita untuk bisa di copy paste',
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => AboutUsPage()),
+                                  builder: (context) => ArticleFetcherPage()),
                             );
                           },
                         ),
@@ -107,7 +108,7 @@ class _HomepageState extends State<Homepage> {
             // Halaman History
             HistoryPage(),
             // Halaman Profil Pengguna
-            AboutUsPage(),
+            const AboutUsPage(),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(

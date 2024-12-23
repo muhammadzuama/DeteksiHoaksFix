@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:hoaks/util/global.color.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 
@@ -22,15 +23,32 @@ class _PredictionPageState extends State<PredictionPage> {
       return;
     }
 
+    final wordCount = inputText.split(RegExp(r'\s+')).length;
+    if (wordCount < 20 || wordCount > 1200) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Validasi Jumlah Kata"),
+          content: Text(
+              "Jumlah kata yang dimasukkan adalah $wordCount kata. Jumlah kata harus antara 40 hingga 1.200."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _errorMessage = null;
     });
 
     try {
-      // Endpoint API
-      final url = Uri.parse("http://192.168.1.7:5000/predict");
+      final url = Uri.parse("http://192.168.1.4:5000/predict");
 
-      // Request ke API
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -48,7 +66,6 @@ class _PredictionPageState extends State<PredictionPage> {
           final predictedLabel = prediction['predicted_label'];
           final originalText = prediction['original_text'];
 
-          // Navigasi ke halaman hasil prediksi
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -80,30 +97,56 @@ class _PredictionPageState extends State<PredictionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Prediksi Teks"),
+        title: const Text(
+          "Prediksi Teks",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: GlobalColors.button,
+        iconTheme: IconThemeData(
+          color: Colors.white, // Mengubah warna ikon menjadi putih
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _textController,
               decoration: const InputDecoration(
                 labelText: "Masukkan teks untuk prediksi",
                 border: OutlineInputBorder(),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.deepPurple, width: 2.0),
+                ),
               ),
               maxLines: 5,
+              style: const TextStyle(fontSize: 16.0),
             ),
             const SizedBox(height: 16.0),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: fetchPredictions,
-              child: const Text("Prediksi"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: GlobalColors.button,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 135),
+                elevation: 5,
+              ),
+              icon: Icon(
+                Icons.auto_awesome_outlined,
+                color: Colors.white,
+                size: 20.0,
+              ),
+              label: const Text("Prediksi",
+                  style: TextStyle(fontSize: 16, color: Colors.white)),
             ),
             const SizedBox(height: 16.0),
             if (_errorMessage != null)
               Text(
                 _errorMessage!,
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red, fontSize: 16),
               ),
           ],
         ),
@@ -123,7 +166,6 @@ class PredictionResultPage extends StatelessWidget {
 
   Future<void> saveToFile(BuildContext context, String text) async {
     try {
-      // Tampilkan dialog untuk meminta nama file
       String? fileName = await showDialog<String>(
         context: context,
         builder: (context) {
@@ -144,19 +186,23 @@ class PredictionResultPage extends StatelessWidget {
         },
       );
 
-      if (fileName != null && fileName.isNotEmpty) {
-        // Direktori penyimpanan
-        final directory = Directory('/storage/emulated/0/Download');
-        if (!directory.existsSync()) {
-          directory.createSync(recursive: true);
-        }
-        final file = File('${directory.path}/$fileName.txt');
-        await file.writeAsString(text);
-
+      if (fileName == null || fileName.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("File berhasil disimpan di: ${file.path}")),
+          const SnackBar(content: Text("Nama file tidak boleh kosong.")),
         );
+        return;
       }
+
+      final directory = Directory('/storage/emulated/0/Download/Deteksi Hoaks');
+      if (!directory.existsSync()) {
+        directory.createSync(recursive: true);
+      }
+      final file = File('${directory.path}/$fileName.txt');
+      await file.writeAsString(text);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("File berhasil disimpan di: ${file.path}")),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Gagal menyimpan file: $e")),
@@ -176,6 +222,10 @@ class PredictionResultPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Hasil Prediksi"),
+        backgroundColor: GlobalColors.button,
+        iconTheme: IconThemeData(
+          color: Colors.white, // Mengubah warna ikon menjadi putih
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -210,6 +260,7 @@ class PredictionResultPage extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Text(
                   originalText,
+                  textAlign: TextAlign.justify,
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ),
@@ -221,6 +272,13 @@ class PredictionResultPage extends StatelessWidget {
               },
               icon: const Icon(Icons.save),
               label: const Text("Simpan Hasil"),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                elevation: 5,
+              ),
             ),
           ],
         ),
@@ -229,8 +287,9 @@ class PredictionResultPage extends StatelessWidget {
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: PredictionPage(),
-  ));
-}
+// void main() {
+//   runApp(MaterialApp(
+//     home: PredictionPage(),
+//     theme: ThemeData(primarySwatch: Colors.deepPurple),
+//   ));
+// }

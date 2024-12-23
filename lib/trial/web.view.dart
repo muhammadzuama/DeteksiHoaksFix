@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
 import 'package:hoaks/trial/fetch.dart';
 import 'package:hoaks/util/global.color.dart';
 
@@ -14,7 +13,6 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
   String _articleContent = '';
   bool _isLoading = false;
   String? _errorMessage;
-  String? _predictionResult;
 
   // Validasi URL dengan Regex
   bool _isValidUrl(String url) {
@@ -29,8 +27,8 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
         regex.hasMatch(url);
   }
 
-  // Ambil artikel dan lakukan prediksi
-  Future<void> _fetchAndPredictArticle() async {
+  // Ambil artikel dari URL
+  Future<void> _fetchArticle() async {
     String url = _urlController.text.trim();
     if (!_isValidUrl(url)) {
       setState(() {
@@ -42,7 +40,7 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-      _predictionResult = null;
+      _articleContent = '';
     });
 
     try {
@@ -50,7 +48,6 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
       setState(() {
         _articleContent = articleContent;
       });
-      await _detectHoax(articleContent);
     } catch (e) {
       setState(() {
         _errorMessage = 'Kesalahan saat memuat data: $e';
@@ -62,44 +59,26 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
     }
   }
 
-  // Prediksi apakah artikel hoaks
-  Future<void> _detectHoax(String articleContent) async {
-    final Uri apiEndpoint = Uri.parse("http://192.168.1.4:5000/predict");
-
-    try {
-      final response = await http.post(
-        apiEndpoint,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          "texts": [articleContent]
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        final prediction = responseData['predictions']?[0]?['label'];
-        setState(() {
-          _predictionResult = prediction ?? 'Hasil tidak ditemukan.';
-        });
-      } else {
-        setState(() {
-          _errorMessage =
-              'Gagal memuat prediksi. Status kode: ${response.statusCode}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Kesalahan saat memproses prediksi: $e';
-      });
-    }
+  // Salin konten artikel ke clipboard
+  void _copyToClipboard() {
+    Clipboard.setData(ClipboardData(text: _articleContent));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Konten artikel disalin ke clipboard!')),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fetch Article'),
-        backgroundColor: Colors.blueGrey,
+        title: const Text(
+          "Ambil Content Berita",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: GlobalColors.button,
+        iconTheme: IconThemeData(
+          color: Colors.white, // Mengubah warna ikon menjadi putih
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -114,7 +93,7 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _isLoading ? null : _fetchAndPredictArticle,
+              onPressed: _isLoading ? null : _fetchArticle,
               style: ElevatedButton.styleFrom(
                 backgroundColor: GlobalColors.button,
                 padding: const EdgeInsets.symmetric(
@@ -130,7 +109,7 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
                 children: [
                   Icon(Icons.auto_awesome_outlined, color: Colors.white),
                   SizedBox(width: 10.0),
-                  Text('Analyze', style: TextStyle(color: Colors.white)),
+                  Text('Cek Berita', style: TextStyle(color: Colors.white)),
                 ],
               ),
             ),
@@ -147,14 +126,25 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
                       Text(
                         _articleContent,
                         style: const TextStyle(fontSize: 16),
+                        textAlign: TextAlign.justify,
                       ),
                       const SizedBox(height: 20),
-                      if (_predictionResult != null)
-                        Text(
-                          'Hoax Prediction: $_predictionResult',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                      ElevatedButton.icon(
+                        onPressed: _copyToClipboard,
+                        icon: const Icon(Icons.copy, color: Colors.white),
+                        label: const Text(
+                          'Copy Text Berita',
+                          style: TextStyle(color: Colors.white),
                         ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: GlobalColors.button,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0, vertical: 12.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

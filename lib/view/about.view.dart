@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hoaks/util/global.color.dart';
 
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
@@ -7,8 +8,17 @@ class AboutUsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tentang Kami'),
-        backgroundColor: const Color.fromARGB(255, 107, 128, 156),
+        backgroundColor: GlobalColors.button,
+        title: const Text(
+          "Tentang Kami",
+          style: TextStyle(color: Colors.white),
+        ),
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.refresh),
+        //     onPressed: _loadFiles,
+        //   ),
+        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

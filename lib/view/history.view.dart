@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:hoaks/util/global.color.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -10,18 +10,18 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   List<FileSystemEntity> _files = [];
-  String? _selectedFileContent;
   bool _isLoading = true;
+  late Directory _hoaxDirectory;
 
   @override
   void initState() {
     super.initState();
-    _loadFiles();
+    _initializeDirectory();
   }
 
-  Future<void> _loadFiles() async {
+  Future<void> _initializeDirectory() async {
     try {
-      // Meminta izin akses penyimpanan eksternal
+      // Meminta izin akses penyimpanan
       PermissionStatus permissionStatus = await Permission.storage.request();
       if (!permissionStatus.isGranted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -30,14 +30,35 @@ class _HistoryPageState extends State<HistoryPage> {
         return;
       }
 
-      // Mendapatkan direktori Downloads
-      final directory = Directory(
-          '/storage/emulated/0/Download'); // path untuk folder Download
-      if (await directory.exists()) {
-        final files = directory.listSync(); // List all files and directories
+      // Mengakses atau membuat folder "Deteksi Hoaks" di Downloads
+      final downloadDir = Directory('/storage/emulated/0/Download');
+      _hoaxDirectory = Directory('${downloadDir.path}/Deteksi Hoaks');
+
+      if (!(await _hoaxDirectory.exists())) {
+        await _hoaxDirectory.create(recursive: true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Folder 'Deteksi Hoaks' berhasil dibuat.")),
+        );
+      }
+
+      // Memuat file di folder
+      _loadFiles();
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gagal mengakses folder: $e")),
+      );
+    }
+  }
+
+  Future<void> _loadFiles() async {
+    try {
+      if (await _hoaxDirectory.exists()) {
+        final files = _hoaxDirectory.listSync();
         setState(() {
-          _files =
-              files.where((file) => file is File).toList(); // Filter files only
+          _files = files.where((file) => file is File).toList();
           _isLoading = false;
         });
       } else {
@@ -45,7 +66,7 @@ class _HistoryPageState extends State<HistoryPage> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Folder Download tidak ditemukan.")),
+          SnackBar(content: Text("Folder 'Deteksi Hoaks' tidak ditemukan.")),
         );
       }
     } catch (e) {
@@ -58,28 +79,11 @@ class _HistoryPageState extends State<HistoryPage> {
     }
   }
 
-  Future<void> _readFile(File file) async {
-    try {
-      final content = await file.readAsString();
-      setState(() {
-        _selectedFileContent = content;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal membaca file: $e")),
-      );
-    }
-  }
-
   Future<void> _deleteFile(File file) async {
     try {
       await file.delete();
       setState(() {
         _files.remove(file);
-        if (_selectedFileContent != null &&
-            file.path.contains(_selectedFileContent!)) {
-          _selectedFileContent = null;
-        }
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("File berhasil dihapus.")),
@@ -95,61 +99,102 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Histori File"),
+        backgroundColor: GlobalColors.button,
+        title: const Text(
+          "Histori File",
+          style: TextStyle(color: Colors.white),
+        ),
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.refresh),
+        //     onPressed: _loadFiles,
+        //   ),
+        // ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _files.isEmpty
               ? const Center(
                   child: Text(
-                    "Tidak ada file yang tersedia.",
+                    "Tidak ada file di folder 'Deteksi Hoaks'.",
                     style: TextStyle(fontSize: 16.0),
                   ),
                 )
-              : Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: ListView.builder(
-                        itemCount: _files.length,
-                        itemBuilder: (context, index) {
-                          final file = _files[index] as File;
-                          return ListTile(
-                            title: Text(
-                              file.path.split('/').last,
-                              overflow: TextOverflow.ellipsis,
+              : ListView.builder(
+                  itemCount: _files.length,
+                  itemBuilder: (context, index) {
+                    final file = _files[index] as File;
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      elevation: 4.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 16.0),
+                        leading:
+                            Icon(Icons.description, color: GlobalColors.button),
+                        title: Text(
+                          file.path.split('/').last,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          file.path,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 12.0, color: Colors.grey),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deleteFile(file),
+                        ),
+                        onTap: () async {
+                          final content = await file.readAsString();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  FileContentPage(content: content),
                             ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteFile(file),
-                            ),
-                            onTap: () => _readFile(file),
                           );
                         },
                       ),
-                    ),
-                    const VerticalDivider(width: 1),
-                    Expanded(
-                      flex: 3,
-                      child: _selectedFileContent == null
-                          ? const Center(
-                              child: Text(
-                                "Pilih file untuk melihat isi.",
-                                style: TextStyle(fontSize: 16.0),
-                              ),
-                            )
-                          : Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: SingleChildScrollView(
-                                child: Text(
-                                  _selectedFileContent!,
-                                  style: const TextStyle(fontSize: 16.0),
-                                ),
-                              ),
-                            ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
+    );
+  }
+}
+
+class FileContentPage extends StatelessWidget {
+  final String content;
+
+  FileContentPage({required this.content});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Isi File"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Text(
+            content,
+            style: const TextStyle(fontSize: 16.0),
+          ),
+        ),
+      ),
     );
   }
 }

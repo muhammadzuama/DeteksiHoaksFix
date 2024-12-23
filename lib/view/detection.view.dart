@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hoaks/trial/prodik.dart';
-import 'package:hoaks/trial/web.view.dart';
+import 'package:hoaks/util/global.color.dart';
 import 'package:hoaks/view/fitur1.view.dart';
 
 class DetectionView extends StatelessWidget {
@@ -8,8 +8,14 @@ class DetectionView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Deteksi Hoaks'),
-        backgroundColor: const Color.fromARGB(255, 107, 128, 156),
+        title: const Text(
+          "Deteksi Hoaks",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: GlobalColors.button,
+        iconTheme: IconThemeData(
+          color: Colors.white, // Mengubah warna ikon menjadi putih
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -45,19 +51,6 @@ class DetectionView extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (context) => PredictionPage1()),
-                      );
-                      // Implement the onTap action
-                    },
-                  ),
-                  HoaxFeature(
-                    imagePath: 'images/image5.png',
-                    title: 'Deteksi Hoaks With Link',
-                    subtitle: 'Tahap Pengembangan',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ArticleFetcherPage()),
                       );
                       // Implement the onTap action
                     },
