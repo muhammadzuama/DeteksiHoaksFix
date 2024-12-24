@@ -221,7 +221,10 @@ class PredictionResultPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Hasil Prediksi"),
+        title: const Text("Hasil Prediksi",
+            style: TextStyle(
+              color: Colors.white,
+            )),
         backgroundColor: GlobalColors.button,
         iconTheme: IconThemeData(
           color: Colors.white, // Mengubah warna ikon menjadi putih
