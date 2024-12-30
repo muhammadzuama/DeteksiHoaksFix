@@ -70,6 +70,7 @@ class _ArticleFetcherPageState extends State<ArticleFetcherPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Ambil Content Berita",

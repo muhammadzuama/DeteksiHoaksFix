@@ -98,6 +98,7 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: GlobalColors.button,
         title: const Text(
@@ -177,6 +178,7 @@ class FileContentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Isi File"),
         leading: IconButton(
@@ -192,6 +194,7 @@ class FileContentPage extends StatelessWidget {
           child: Text(
             content,
             style: const TextStyle(fontSize: 16.0),
+            textAlign: TextAlign.justify,
           ),
         ),
       ),

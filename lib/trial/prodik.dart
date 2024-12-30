@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, use_key_in_widget_constructors
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -59,7 +61,8 @@ class _PredictionPageState extends State<PredictionPage1> {
         return;
       }
 
-      final apiUrl = Uri.parse("http://192.168.1.4:5000/predict");
+      final apiUrl =
+          Uri.parse("https://j3wm37sm-5000.asse.devtunnels.ms/predict");
 
       final response = await http.post(
         apiUrl,
@@ -149,6 +152,7 @@ class _PredictionPageState extends State<PredictionPage1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Prediksi Teks Dengan Link",
@@ -232,6 +236,7 @@ class _PredictionPageState extends State<PredictionPage1> {
 class PredictionResultPage extends StatelessWidget {
   final String originalText;
   final int predictedLabel;
+  // ignore: non_constant_identifier_names
   final int confidence_score;
 
   const PredictionResultPage({

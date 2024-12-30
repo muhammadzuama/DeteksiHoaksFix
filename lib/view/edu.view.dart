@@ -164,6 +164,7 @@ class _DetailArticlePageState extends State<DetailArticlePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Artikel Edukasi",

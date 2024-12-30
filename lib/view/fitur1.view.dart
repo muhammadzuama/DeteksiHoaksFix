@@ -47,7 +47,7 @@ class _PredictionPageState extends State<PredictionPage> {
     });
 
     try {
-      final url = Uri.parse("http://192.168.1.4:5000/predict");
+      final url = Uri.parse("https://j3wm37sm-5000.asse.devtunnels.ms/predict");
 
       final response = await http.post(
         url,
@@ -96,9 +96,10 @@ class _PredictionPageState extends State<PredictionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          "Prediksi Teks",
+          "Deteksi Teks",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: GlobalColors.button,
@@ -114,7 +115,7 @@ class _PredictionPageState extends State<PredictionPage> {
             TextField(
               controller: _textController,
               decoration: const InputDecoration(
-                labelText: "Masukkan teks untuk prediksi",
+                labelText: "Masukkan teks untuk Deteksi",
                 border: OutlineInputBorder(),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.deepPurple, width: 2.0),
@@ -139,7 +140,7 @@ class _PredictionPageState extends State<PredictionPage> {
                 color: Colors.white,
                 size: 20.0,
               ),
-              label: const Text("Prediksi",
+              label: const Text("Analyze",
                   style: TextStyle(fontSize: 16, color: Colors.white)),
             ),
             const SizedBox(height: 16.0),
@@ -221,7 +222,7 @@ class PredictionResultPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Hasil Prediksi",
+        title: const Text("Hasil Deteksi",
             style: TextStyle(
               color: Colors.white,
             )),

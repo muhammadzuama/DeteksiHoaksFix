@@ -3,7 +3,7 @@ import 'package:hoaks/trial/web.view.dart';
 import 'package:hoaks/view/about.view.dart';
 import 'package:hoaks/view/detection.view.dart';
 import 'package:hoaks/view/edu.view.dart';
-import 'package:hoaks/view/history.view.dart'; // Import halaman profil pengguna
+import 'package:hoaks/view/history.view.dart';
 
 class Homepage extends StatefulWidget {
   @override
@@ -13,12 +13,11 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int _currentIndex = 0;
   late PageController _pageController;
+
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-        initialPage:
-            _currentIndex); // Memuat data pengguna dari SharedPreferences
+    _pageController = PageController(initialPage: _currentIndex);
   }
 
   @override
@@ -26,8 +25,6 @@ class _HomepageState extends State<Homepage> {
     _pageController.dispose();
     super.dispose();
   }
-
-  // Fungsi untuk memuat data pengguna
 
   @override
   Widget build(BuildContext context) {
@@ -45,69 +42,8 @@ class _HomepageState extends State<Homepage> {
             });
           },
           children: [
-            // Halaman Utama (Home)
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Text(
-                    //   'Selamat datang, User',
-                    //   style: const TextStyle(
-                    //     fontSize: 24,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    // ),
-                    ListView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        HoaxFeature(
-                          imagePath: 'images/image4.png',
-                          title: 'Detect Hoax',
-                          subtitle: 'Gunakan AI untuk Mendeteksi Hoax',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => DetectionView()),
-                            );
-                          },
-                        ),
-                        HoaxFeature(
-                          imagePath: 'images/image5.png',
-                          title: 'Edukasi',
-                          subtitle: 'Lihat edukasi untuk menghindari hoax',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MenuUtamaPage()),
-                            );
-                          },
-                        ),
-                        HoaxFeature(
-                          imagePath: 'images/image6.png',
-                          title: 'Ubah Link Berita Menjadi Teks Berita',
-                          subtitle: 'Copy isi berita untuk bisa di copy paste',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ArticleFetcherPage()),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Halaman History
+            _buildHomePage(context),
             HistoryPage(),
-            // Halaman Profil Pengguna
             const AboutUsPage(),
           ],
         ),
@@ -137,6 +73,52 @@ class _HomepageState extends State<Homepage> {
           },
         ),
       ),
+    );
+  }
+
+  // Membuat halaman Home
+  Widget _buildHomePage(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                HoaxFeature(
+                  imagePath: 'images/image4.png',
+                  title: 'Detect Hoax',
+                  subtitle: 'Gunakan AI untuk Mendeteksi Hoax',
+                  onTap: () => _navigateTo(context, DetectionView()),
+                ),
+                HoaxFeature(
+                  imagePath: 'images/image5.png',
+                  title: 'Edukasi',
+                  subtitle: 'Lihat edukasi untuk menghindari hoax',
+                  onTap: () => _navigateTo(context, MenuUtamaPage()),
+                ),
+                HoaxFeature(
+                  imagePath: 'images/image6.png',
+                  title: 'Ubah Link Berita Menjadi Teks Berita',
+                  subtitle: 'Copy isi berita untuk bisa di copy paste',
+                  onTap: () => _navigateTo(context, ArticleFetcherPage()),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Fungsi untuk navigasi ke halaman lain
+  void _navigateTo(BuildContext context, Widget page) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
     );
   }
 }
