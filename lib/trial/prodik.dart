@@ -319,6 +319,7 @@ class PredictionResultPage extends StatelessWidget {
     Color iconColor = predictedLabel == 0 ? Colors.green : Colors.red;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Hasil Prediksi",
