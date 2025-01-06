@@ -167,42 +167,21 @@ class PredictionResultPage extends StatelessWidget {
 
   Future<void> saveToFile(BuildContext context, String text) async {
     try {
-      String? fileName = await showDialog<String>(
-        context: context,
-        builder: (context) {
-          TextEditingController controller = TextEditingController();
-          return AlertDialog(
-            title: const Text("Masukkan Nama File"),
-            content: TextField(
-              controller: controller,
-              decoration: const InputDecoration(hintText: "Nama file"),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, controller.text.trim()),
-                child: const Text("Simpan"),
-              ),
-            ],
-          );
-        },
-      );
-
-      if (fileName == null || fileName.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Nama file tidak boleh kosong.")),
-        );
-        return;
-      }
+      final timestamp = DateTime.now().toIso8601String().replaceAll(":", "-");
+      final fileName = "deteksi_$timestamp.txt";
 
       final directory = Directory('/storage/emulated/0/Download/Deteksi Hoaks');
       if (!directory.existsSync()) {
         directory.createSync(recursive: true);
       }
-      final file = File('${directory.path}/$fileName.txt');
+
+      final file = File('${directory.path}/$fileName');
       await file.writeAsString(text);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("File berhasil disimpan di: ${file.path}")),
+        SnackBar(
+          content: Text("File disimpan di: ${file.path}"),
+        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

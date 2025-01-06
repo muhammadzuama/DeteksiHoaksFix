@@ -244,57 +244,18 @@ class PredictionResultPage extends StatelessWidget {
     required this.predictedLabel,
     required this.confidence_score,
   });
+
   Future<void> saveToFile(BuildContext context, String text) async {
     try {
-      String? fileName = await showDialog<String>(
-        context: context,
-        builder: (BuildContext context) {
-          TextEditingController fileNameController = TextEditingController();
-          return AlertDialog(
-            title: const Text("Masukkan Nama File"),
-            content: TextField(
-              controller: fileNameController,
-              decoration: const InputDecoration(
-                hintText: "Nama file",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(fileNameController.text.trim());
-                },
-                child: const Text("Simpan"),
-              ),
-            ],
-          );
-        },
-      );
-
-      if (fileName == null || fileName.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Nama file tidak valid!")),
-        );
-        return;
-      }
-
-      // Validasi karakter yang tidak diperbolehkan pada nama file
-      final invalidCharacters = RegExp(r'[<>:"/\\|?*]');
-      if (invalidCharacters.hasMatch(fileName)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Nama file mengandung karakter tidak valid."),
-          ),
-        );
-        return;
-      }
+      final timestamp = DateTime.now().toIso8601String().replaceAll(":", "-");
+      final fileName = "deteksi_$timestamp.txt";
 
       final directory = Directory('/storage/emulated/0/Download/Deteksi Hoaks');
       if (!directory.existsSync()) {
         directory.createSync(recursive: true);
       }
 
-      final file = File('${directory.path}/$fileName.txt');
+      final file = File('${directory.path}/$fileName');
       await file.writeAsString(text);
 
       ScaffoldMessenger.of(context).showSnackBar(
