@@ -1,6 +1,6 @@
-# hoaks
+# Dhoaks
 
-A new Flutter project.
+D-Hoaks merupakan Aplikasi deep learning guna mendeteksi berita hoaks.
 
 ## Run Local
 
