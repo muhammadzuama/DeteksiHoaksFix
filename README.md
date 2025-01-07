@@ -8,6 +8,12 @@ A new Flutter project.
 git clone https://github.com/muhammadzuama/DeteksiHoaksFix.git
 ```
 
+## set config
+
+```bash
+flutter pub get
+```
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
