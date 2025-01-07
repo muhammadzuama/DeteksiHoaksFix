@@ -2,6 +2,12 @@
 
 A new Flutter project.
 
+## Run Local
+
+```bash
+git clone https://github.com/muhammadzuama/DeteksiHoaksFix.git
+```
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
