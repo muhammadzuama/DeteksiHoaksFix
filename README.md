@@ -27,3 +27,5 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 # HoaksDetectionAppsNoLogin
+menggunakna rest API dengan menggunakna library flask untuk mendeploy model manjadi API
+sehingga bisa diimplmentasikan dalam aplikasi android
